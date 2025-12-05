@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Upload Heatmap Data";
+}
+
+<h2>Upload Heatmap CSV/Excel</h2>
+
+<form asp-action="Upload" asp-controller="Heatmap" method="post" enctype="multipart/form-data">
+    <div class="form-group mt-3">
+        <label>Select File</label>
+        <input type="file" name="uploadedFile" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Upload</button>
+</form>

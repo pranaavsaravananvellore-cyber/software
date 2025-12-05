@@ -1,0 +1,425 @@
+@using SensoreAPPMVC.Models;
+@model List<User>
+
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout=null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 80px;
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0;
+            gap: 32px;
+            position: sticky;
+            left: 0;
+            top: 0;
+            height: 100vh;
+        }
+
+        .sidebar-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: invert(1);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 20px;
+        }
+
+        .sidebar-btn:hover {
+            color: white;
+            background-color: rgba(55, 65, 81, 0.5);
+        }
+
+        .sidebar-btn.active {
+            background-color: #a855f7;
+            color: white;
+        }
+
+        .sidebar-btn i {
+            font-size: 24px;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .main-content h1 {
+            font-size: 30px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 32px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .card-content {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            background-color: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            width: fit-content;
+        }
+
+        /* Account Item */
+        .account-item {
+            padding: 12px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .account-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .account-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-email {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .edit-button, .delete-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            font-size: 16px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .edit-button:hover {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .delete-button:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .empty-state {
+            color: #9ca3af;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .main-content h1 {
+                font-size: 24px;
+                margin-bottom: 16px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header, .card-content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <img src="~/images/footerLoginIcon.png" alt="Logo" class="sidebar-logo">
+            
+            <div class="sidebar-nav">
+                <button class="sidebar-btn active" title="Data"><i class='bx bx-grid'></i></button>
+                <button class="sidebar-btn" title="Feedback"><i class='bx bx-comment'></i></button>
+                <button class="sidebar-btn" title="Layout"><i class='bx bx-layout'></i></button>
+            </div>
+
+            <div class="sidebar-bottom">
+                <a href="@Url.Action("Logout", "Account")" class="sidebar-btn" title="Logout"><i class='bx bx-left-arrow-alt'></i></a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Dashboard</h1>
+            
+            <div class="grid">
+                <!-- Pending Onboarding Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Pending onboarding</div>
+                    </div>
+                    <div class="card-content">
+                        @if (Model == null || !Model.Any(u => u is Patient))
+                        {
+                            <p class="empty-state">No pending onboarding</p>
+                        }
+                        else
+                        {
+                            @foreach (var patient in Model
+                                .OfType<Patient>()
+                                .Where(p => !p.CompletedRegistration)
+                                .Take(2))
+                            {
+                                <div style="padding: 12px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #374151;">@patient.Name</div>
+                                        <div style="display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; margin-top: 8px;">
+                                            @patient.Email
+                                        </div>
+                                    </div>
+                                    <button style="background: none; border: none; cursor: pointer; padding: 4px; color: #dc2626;" title="Remove">
+                                        <i class='bx bx-trash'></i>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Unassigned Patients Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Unassigned Patients</div>
+                        <button style="background: none; border: none; cursor: pointer; font-size: 18px;" title="Add Patient"><i class='bx bx-plus'></i></button>
+                    </div>
+                    <div class="card-content">
+                        @* Show the SAME list as Pending onboarding *@
+                        @if (Model == null || !Model.Any(u => u is Patient && !(u as Patient)!.CompletedRegistration))
+                        {
+                            <p class="empty-state">No unassigned patients</p>
+                        }
+                        else
+                        {
+                            @foreach (var patient in Model
+                                .OfType<Patient>()
+                                .Where(p => !p.CompletedRegistration))
+                            {
+                                <div style="padding: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; border: 1px solid #e5e7eb; margin-bottom: 6px;">
+                                    <span style="font-size: 14px; color: #374151;">@patient.Name (@patient.Email)</span>
+                                    
+                                    <a href="@Url.Action("Edit", "Admin", new { id = patient.UserId })"
+                                       style="padding: 4px; color: black; background: none; border: none; cursor: pointer; font-size: 16px; text-decoration:none;"
+                                       title="Edit">
+                                        <i class='bx bx-edit'></i>
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Alerts Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Alerts</div>
+                    </div>
+                    <div class="card-content">
+                        <div style="padding: 12px; background-color: #f3f0ff; border: 1px solid #e9d5ff; border-radius: 6px; display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px;">
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                                <span style="font-size: 11px; font-weight: 600; color: #6b21a8; display: block;">Password reset request</span>
+                                <div style="font-size: 14px; font-weight: 500; color: #374151;">Yinuach</div>
+                                <div style="font-size: 12px; color: #6b7280;">Sent: 15:00 | 13/4/2025</div>
+                            </div>
+                            <button style="padding: 4px; color: #6b7280; background: none; border: none; cursor: pointer; font-size: 16px;">✕</button>
+                        </div>
+                        <div style="padding: 12px; background-color: #f3f0ff; border: 1px solid #e9d5ff; border-radius: 6px; display: flex; gap: 12px; align-items: flex-start;">
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                                <span style="font-size: 11px; font-weight: 600; color: #6b21a8; display: block;">Forgotten Email</span>
+                                <div style="font-size: 14px; font-weight: 500; color: #374151;">Monkey Lo Luffy</div>
+                                <div style="font-size: 12px; color: #6b7280;">Sent: 12:10 | 23/4/2025</div>
+                            </div>
+                            <button style="padding: 4px; color: #6b7280; background: none; border: none; cursor: pointer; font-size: 16px;">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Account Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">New Account</div>
+                    </div>
+                    <div class="card-content">
+                        <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; height: 120px;">
+                            <a href="@Url.Action("Create", "Admin")" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; text-decoration: none;">
+                                <span style="font-size: 32px; color: #9ca3af;"><i class='bx bx-plus'></i></span>
+                                <span style="font-size: 12px; color: #9ca3af;">Add Account</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manage Accounts Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Manage accounts</div>
+                    </div>
+                    <div class="card-content">
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <p class="empty-state">No accounts to manage</p>
+                        }
+                        else
+                        {
+                            @foreach (var user in Model)
+                            {
+                                <div class="account-item">
+                                    <div class="account-info">
+                                        <div class="account-name">@user.Name</div>
+                                        <div class="account-email">@user.Email</div>
+                                    </div>
+                                    <div class="account-actions">
+                                        <a href="@Url.Action("Edit", "Admin", new { id = user.UserId })" class="edit-button" title="Edit"><i class='bx bx-edit'></i></a>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
